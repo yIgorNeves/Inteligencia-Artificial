@@ -216,7 +216,7 @@ def IA_vez(comp_escolha, humano_escolha):
     else:
         move = minimax(tabuleiro, profundidade, COMP)
         x, y = move[0], move[1]
-
+    
     exec_movimento(x, y, COMP)
     time.sleep(1)
 """ ---------------------------------------------------------- """

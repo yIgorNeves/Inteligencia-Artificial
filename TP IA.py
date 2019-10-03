@@ -6,7 +6,6 @@
 """
 Este código se refere ao primeiro trabalho pratico da disciplina Inteligencia Artificial.
 """
-
 #!/usr/bin/env python3
 from math import inf as infinity
 from random import choice
@@ -76,10 +75,10 @@ ainda permitidas para próximas jogadas.
 def numeros_disponiniveis(conjunto_de_palitos):
     numeros = []
     for x, cell in enumerate(conjunto_de_palitos):
-        if cell>2: numeros.append([cell])
-    print(len(numeros))
+        if cell>2: 
+            numeros.append(cell)
+            #print("numero disponivel",numeros)
     return numeros
-
 
 def limpa_console():
     os_name = platform.system().lower()
@@ -104,6 +103,21 @@ def avaliacao(conjunto_de_palitos):
 
     return placar
 
+
+def div_disponiveis(divisiveis):
+    for x in divisiveis:
+        lista_menor = []
+        if x > 2:
+            if x%2 == 0:
+                menor = (x/2)-1
+                lista_menor.append(int(menor))
+                return lista_menor
+
+            else: 
+                menor = x/2
+                lista_menor.append(int(menor))
+                return lista_menor
+
 """
 Função da IA que escolhe o melhor movimento
 :param (estado): estado atual do tabuleiro
@@ -112,7 +126,8 @@ mas nunca será nove neste caso (veja a função iavez())
 :param (jogador): um HUMANO ou um Computador
 :return: uma lista com [melhor linha, melhor coluna, melhor placar]
 """
-def minimax(conjunto_de_palitos, profundidade, jogador):
+num_list =[]
+def minimax(palitos, profundidade, jogador):
 
     # valor-minmax(estado)
     if jogador == COMP:
@@ -121,54 +136,104 @@ def minimax(conjunto_de_palitos, profundidade, jogador):
         melhor = [-1, -1, +infinity]
 
     # valor-minimax(estado) = avaliacao(estado)
-    if profundidade == 0 or fim_jogo(conjunto_de_palitos):
-        placar = avaliacao(conjunto_de_palitos)
+    if profundidade == 0 or fim_jogo(palitos):
+        placar = avaliacao(palitos)
         return [-1, -1, placar]
 
-    for numero in numeros_disponiniveis(conjunto_de_palitos):
-        x, y = numero[0], numero[1]
-        conjunto_de_palitos[x][y] = jogador
-        placar = minimax(conjunto_de_palitos, profundidade - 1, -jogador)
-        conjunto_de_palitos[x][y] = 0
-        placar[0], placar[1] = x, y
+    for numeros in numeros_disponiniveis(palitos):
+        num_list.append(numeros)
+        """
+        print("-------")
+        print("palitos", palitos)
+        print("numeros selecionado",numeros)        
+        print("numlist",num_list)
+        """        
+        for min in div_disponiveis(num_list):
+            num_list.remove(numeros)
+            #print("-------")
 
-        if jogador == COMP:
-            if placar[2] > melhor[2]:
-                melhor = placar  # valor MAX
-        else:
-            if placar[2] < melhor[2]:
-                melhor = placar  # valor MIN
-    return melhor
-""" ---------------------------------------------------------- """
+            #print("min",min)            
+            posi = palitos.index(numeros)
+            #print("posi",posi)
+            palitos.insert(posi+1, numeros-min)
+            """
+            print("palitos",palitos)
+            print("palitos posi",palitos[posi])
+            """
+            palitos[posi] = min  
+            """
+            print("palitos att", palitos)
+            print("palitos posi att",palitos[posi])
+            print("-------")
+            """
 
+                      
+            placar = minimax(palitos, div_disponiveis(palitos), -jogador)            
+            placar[0], placar[1] =  numeros-min, min
+            #print("placar:",placar)
+            #print("numeros:", numeros)
+            palitos[posi] = numeros
+            #print("palitos[posi]:",palitos[posi])
+            palitos.pop(posi+1)
+            """
+            print("posi:",posi)
+            print("palitos:",palitos)
+            print("melhor:",melhor)
+            input()
+            """
+
+            if jogador == COMP:
+                if placar[2] > melhor[2]:
+                    melhor = placar  # valor MAX
+            else:
+                if placar[2] < melhor[2]:
+                    melhor = placar  # valor MIN
+        return melhor
 """
 Função para a vez da IA:
 """
-def IA_vez(IA):
+def IA_vez(conjunto_de_palitos):
+
     profundidade = len(numeros_disponiniveis(conjunto_de_palitos))
     if profundidade == 0 or fim_jogo(conjunto_de_palitos):
         return
     
     print("Vez do computador aguarde")
+    print(conjunto_de_palitos)
+
+    if fim_jogo(conjunto_de_palitos) == True:
+        x = conjunto_de_palitos[0]
+    else:
+        move = minimax(conjunto_de_palitos, profundidade, COMP)
+        x = move[0]
+        y = move[1]
+        print("O computador subistituiu:",(x+y),"por",x ,"e",y)
+
+    exec_movimento(x, y, (x+y))
 
 
 """
 Metodo para a vez do humano
 """
 def HUMANO_vez(conjunto_de_palitos):
+
+    print("O conjunto de palitos é:", sorted(conjunto_de_palitos , reverse=True))
+    
     original = int(input("Qual conjunto de palitos deseja dividir: "))
-    while num_div(original) ==  False:
+    
+    while num_div(original) == False:
         print("A quantidade de palitos nao pode ser divida ou nao esta no conjunto.")            
         original = int(input("Qual conjunto de palitos deseja dividir: "))
-        a = int(input("Qual o primeiro numero que voce gostaria de colocar: "))
-        b = int(input("Qual o segundo numero que voce gostaria de colocar: "))
-        #Laço para caso o jogador coloque numeros iguais ou a soma dos numeros seja maior que o numero original
-        while mov_validos(a, b, original) == False:
+    a = int(input("Qual o primeiro numero que voce gostaria de colocar: "))
+    b = int(input("Qual o segundo numero que voce gostaria de colocar: "))
+    while mov_validos(a, b, original) == False:
             a = int(input("Qual o primeiro numero que voce gostaria de colocar: "))
             b = int(input("Qual o segundo numero que voce gostaria de colocar: "))           
-        if mov_validos(a,b, original) == True:
-            exec_movimento(a, b, original)
+    if mov_validos(a,b, original) == True:
+        exec_movimento(a, b, original)
         
+        
+                
 """
 Metodo Principal que chama todas funcoes
 """
@@ -179,25 +244,11 @@ def main():
     print(conjunto_de_palitos)
     #Laço principal do jogo
     while fim_jogo(conjunto_de_palitos)== False:
-        original = int(input("Qual conjunto de palitos deseja dividir: "))
-        #laço para caso o jogador coloque um numero nao valido
-        while num_div(original) ==  False:
-            print("A quantidade de palitos nao pode ser divida ou nao esta no conjunto.")            
-            original = int(input("Qual conjunto de palitos deseja dividir: "))
-        a = int(input("Qual o primeiro numero que voce gostaria de colocar: "))
-        b = int(input("Qual o segundo numero que voce gostaria de colocar: "))
-        #Laço para caso o jogador coloque numeros iguais ou a soma dos numeros seja maior que o numero original
-        while mov_validos(a, b, original) == False:
-            a = int(input("Qual o primeiro numero que voce gostaria de colocar: "))
-            b = int(input("Qual o segundo numero que voce gostaria de colocar: "))           
-        if mov_validos(a,b, original) == True:
-            exec_movimento(a, b, original)
+        IA_vez(conjunto_de_palitos)
+        HUMANO_vez(conjunto_de_palitos)
         print("Posições Disponiveis: %d" % len(numeros_disponiniveis(conjunto_de_palitos)))
         print(sorted(conjunto_de_palitos, reverse=True))
     
-
-    
-
 if __name__ == "__main__":
     main()
 
